@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Validasi Email - DFA dengan Reject State</title>
+  <style>
+    :root {
+      --bg-gradient: linear-gradient(135deg, #e0eafc 0%, #ffffff 100%);
+      --card-bg: #ffffff;
+      --border-color: #2c5282;
+      --text-main: #2d3748;
+      --light-blue: #ebf8ff;
+      --success-blue: #2b6cb0;
+      --reject-red: #c53030;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg-gradient);
+      color: var(--text-main);
+      font-family: "Times New Roman", Times, serif;
+      min-height: 100vh;
+      padding: 40px 20px;
+      line-height: 1.6;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 40px;
+      border-bottom: 2px solid var(--border-color);
+      padding-bottom: 20px;
+    }
+
+    header h1 {
+      font-size: 2rem;
+      text-transform: uppercase;
+      color: var(--border-color);
+      letter-spacing: 1px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      padding: 25px;
+      box-shadow: 10px 10px 0px var(--border-color);
+      margin-bottom: 25px;
+    }
+
+    .card h2 {
+      font-size: 1.1rem;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+      border-left: 5px solid var(--border-color);
+      padding-left: 12px;
+      color: var(--border-color);
+    }
+
+    input#emailInput {
+      width: 100%;
+      padding: 15px;
+      border: 2px solid var(--border-color);
+      font-size: 1.1rem;
+      font-family: inherit;
+      background: var(--light-blue);
+      outline: none;
+    }
+
+    .result-box {
+      margin-top: 15px;
+      padding: 15px;
+      border: 1px solid var(--border-color);
+      text-align: center;
+      font-weight: bold;
+    }
+
+    .result-box.valid { background: var(--success-blue); color: #fff; }
+    .result-box.invalid { background: var(--reject-red); color: #fff; }
+
+    svg.dfa {
+      width: 100%;
+      height: auto;
+      background: #f8fafc;
+      border: 1px solid var(--border-color);
+      padding: 40px 0;
+    }
+
+    circle { fill: #fff; stroke: var(--border-color); stroke-width: 2; transition: all 0.3s; }
+    line { stroke: var(--border-color); stroke-width: 2; }
+    text { fill: var(--border-color); font-size: 16px; font-weight: bold; text-anchor: middle; font-family: inherit; }
+
+    .active { fill: var(--border-color) !important; }
+    .active-text { fill: #ffffff !important; }
+    
+    .active-reject { fill: var(--reject-red) !important; stroke: var(--reject-red) !important; }
+    .active-reject-text { fill: #ffffff !important; }
+
+    .steps-list { list-style: none; }
+    .steps-list li {
+      padding: 12px 0;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>Validasi Email Khusus</h1>
+  </header>
+
+  <div class="card">
+    <h2>Input Alamat Email</h2>
+    <input id="emailInput" type="text" placeholder="Masukkan email (Contoh: user@gmail.com)" autocomplete="off">
+    <div id="resultBox" class="result-box">Menunggu Input...</div>
+  </div>
+
+  <div class="card">
+    <h2>Visualisasi DFA (q5 = Reject State)</h2>
+    <svg class="dfa" viewBox="0 0 700 200">
+      <line x1="72" y1="80" x2="128" y2="80" />
+      <line x1="172" y1="80" x2="228" y2="80" />
+      <line x1="272" y1="80" x2="328" y2="80" />
+      <line x1="372" y1="80" x2="428" y2="80" />
+      
+      <line x1="150" y1="105" x2="300" y2="145" stroke-dasharray="4" />
+      <line x1="250" y1="105" x2="300" y2="145" stroke-dasharray="4" />
+      <line x1="350" y1="105" x2="320" y2="145" stroke-dasharray="4" />
+
+      <circle id="c0" cx="50" cy="80" r="25" />
+      <text id="t0" x="50" y="86">q0</text>
+
+      <circle id="c1" cx="150" cy="80" r="25" />
+      <text id="t1" x="150" y="86">q1</text>
+
+      <circle id="c2" cx="250" cy="80" r="25" />
+      <text id="t2" x="250" y="86">q2</text>
+
+      <circle id="c3" cx="350" cy="80" r="25" />
+      <text id="t3" x="350" y="86">q3</text>
+
+      <circle id="c4" cx="450" cy="80" r="25" stroke-width="4" />
+      <circle cx="450" cy="80" r="20" fill="none" stroke="#2c5282" />
+      <text id="t4" x="450" y="86">q4</text>
+
+      <circle id="c5" cx="310" cy="160" r="25" style="stroke: #c53030;" />
+      <text id="t5" x="310" y="166" style="fill: #c53030;">q5</text>
+    </svg>
+  </div>
+
+  <div class="card">
+    <h2>Logika Transisi</h2>
+    <ul class="steps-list">
+      <li><span>Status Nama Pengguna</span> <span id="st1">-</span></li>
+      <li><span>Status Separator @</span> <span id="st2">-</span></li>
+      <li><span>Status Domain Diizinkan</span> <span id="st3">-</span></li>
+      <li><span>Status Hasil Akhir</span> <span id="st4">-</span></li>
+    </ul>
+  </div>
+</div>
+
+<script>
+  const RESTRICTED_REGEX = /^[a-zA-Z0-9._%+-]+@(gmail|yahoo)\.com$/;
+
+  const input = document.getElementById('emailInput');
+  const resultBox = document.getElementById('resultBox');
+  const st1 = document.getElementById('st1');
+  const st2 = document.getElementById('st2');
+  const st3 = document.getElementById('st3');
+  const st4 = document.getElementById('st4');
+
+  input.addEventListener('input', function() {
+    const val = this.value;
+    const isValid = RESTRICTED_REGEX.test(val);
+    const hasAt = val.includes('@');
+    const parts = val.split('@');
+    const domainPart = parts[1] || "";
+
+    if (val === "") {
+      resultBox.className = "result-box";
+      resultBox.textContent = "Menunggu Input...";
+      resetStatus();
+      updateDFA(0);
+      return;
+    }
+
+    let state = 1; 
+    st1.textContent = "PROSES";
+
+    if (isValid) {
+      state = 4;
+      resultBox.className = "result-box valid";
+      resultBox.textContent = "EMAIL VALID";
+      st2.textContent = "OK";
+      st3.textContent = "OK";
+      st4.textContent = "DITERIMA";
+    } else {
+      resultBox.className = "result-box invalid";
+      resultBox.textContent = "EMAIL TIDAK VALID";
+      st4.textContent = "DITOLAK";
+
+      if (hasAt) {
+        state = 2;
+        st2.textContent = "OK";
+        
+        if (domainPart !== "" && !domainPart.includes("gmail") && !domainPart.includes("yahoo")) {
+          state = 5; 
+          st3.textContent = "DOMAIN ILLEGAL";
+        } else if (domainPart.includes("gmail") || domainPart.includes("yahoo")) {
+          state = 3;
+          st3.textContent = "GMAIL/YAHOO OK";
+        }
+      }
+
+      const invalidChars = /[^a-zA-Z0-9._%+\-@.]/;
+      if (invalidChars.test(val)) {
+        state = 5;
+        st1.textContent = "KARAKTER ILLEGAL";
+      }
+    }
+    
+    updateDFA(state);
+  });
+
+  function resetStatus() {
+    st1.textContent = "-"; st2.textContent = "-";
+    st3.textContent = "-"; st4.textContent = "-";
+  }
+
+  function updateDFA(activeIdx) {
+    for(let i=0; i<=5; i++) {
+      const circle = document.getElementById('c'+i);
+      const text = document.getElementById('t'+i);
+      circle.classList.remove('active', 'active-reject');
+      text.classList.remove('active-text', 'active-reject-text');
+    }
+    
+    const currentCircle = document.getElementById('c'+activeIdx);
+    const currentText = document.getElementById('t'+activeIdx);
+    
+    if (activeIdx === 5) {
+      currentCircle.classList.add('active-reject');
+      currentText.classList.add('active-reject-text');
+    } else {
+      currentCircle.classList.add('active');
+      currentText.classList.add('active-text');
+    }
+  }
+
+  updateDFA(0);
+</script>
+</body>
+</html>
